@@ -22,7 +22,7 @@ module.exports = {Todo};
 // Example of inserting new todo
 // const newTodo = new Todo({
 //   text: 'Fix fence',
-//   completed: true,
+//   completed: false,
 //   //completedAt: new Date().getTime()
 // });
 

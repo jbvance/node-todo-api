@@ -26,3 +26,5 @@ app.listen(3050, () => {
   console.log('Started on port 3050')
 });
 
+module.exports = {app};
+
