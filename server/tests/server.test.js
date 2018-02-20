@@ -1,9 +1,9 @@
 const expect = require('expect');
 const request = require('supertest');
-const { ObjectID } = require ('mongodb');
+const { ObjectID } = require('mongodb');
 
 const { app } = require('../server');
-const  { Todo } = require('../models/todo');
+const { Todo } = require('../models/todo');
 
 const todos = [
   {
@@ -17,7 +17,7 @@ const todos = [
 ];
 
 // Wipe the db before each test
-beforeEach(done =>{
+beforeEach(done => {
   Todo.remove({}).then(() => {
     return Todo.insertMany(todos);
   }).then(() => done());
@@ -30,7 +30,7 @@ describe('POST /todos', () => {
     // First, send the post request
     request(app)
       .post('/todos')
-      .send({text})
+      .send({ text })
       .expect(200)
       .expect((res) => {
         expect(res.body.text).toBe(text);
@@ -41,29 +41,29 @@ describe('POST /todos', () => {
         }
 
         // Now fetch todos from db and verify the test todo was added
-        Todo.find({text})
-        .then(todos => {
-          expect(todos.length).toBe(1);
-          expect(todos[0].text).toBe(text);
-          done();
-        })
-        .catch(e => done(e));
+        Todo.find({ text })
+          .then(todos => {
+            expect(todos.length).toBe(1);
+            expect(todos[0].text).toBe(text);
+            done();
+          })
+          .catch(e => done(e));
 
-      });     
+      });
   });
 
   // Should not create an invalid todo
-  it ('should not create todo with invalid body data', done => {
+  it('should not create todo with invalid body data', done => {
     request(app)
-    .post('/todos')
-    .send({})
-    .expect(400)
-    .end((err, res) => {
-      if (err) {
-        return done(err);
-      }
-    });
-    
+      .post('/todos')
+      .send({})
+      .expect(400)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+      });
+
     Todo.find()
       .then(todos => {
         expect(todos.length).toBe(2);
@@ -75,7 +75,7 @@ describe('POST /todos', () => {
 }); // end describe
 
 describe('GET /todos', () => {
-  it ('should get all todos', done => {
+  it('should get all todos', done => {
     request(app)
       .get('/todos')
       .expect(200)
@@ -106,7 +106,7 @@ describe('GET /todos/:id', () => {
       .end(done);
   });
 
-  it ('should return 404 for non-object ids', done => {
+  it('should return 404 for non-object ids', done => {
     request(app)
       .get('/todos/1234')
       .expect(404)
@@ -114,3 +114,47 @@ describe('GET /todos/:id', () => {
   })
 
 });
+
+describe('DELETE /todos/:id', done => {
+  it('should remove a todo', done => {
+    const hexId = todos[1]._id.toHexString();
+
+    request(app)
+      .delete(`/todos/${hexId}`)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.todo._id).toBe(hexId);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        // Make sure todo is no longer in db
+        Todo.findById(hexId)
+          .then((todo) => {
+            expect(todo).toNotExist();
+            done();
+          })
+          .catch(e => {
+            done(e);
+          });
+      });
+  });
+
+  it('should return 404 if todo not found', (done) => {
+    var id = new ObjectID().toHexString();
+
+    request(app)
+      .delete(`/todos/${id}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 for non-object ids', done => {
+    request(app)
+      .delete('/todos/1234')
+      .expect(404)
+      .end(done);
+  })
+})
