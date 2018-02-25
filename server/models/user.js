@@ -58,10 +58,38 @@ UserSchema.methods.generateAuthToken = function () {
     });
 };
 
+// Using statics means it's a model method rathern
+// than an instance method
+UserSchema.statics.findByToken = function (token) {
+  const User = this;
+  let decoded = undefined;
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e) {
+    // return new Promise((resolve, reject) => {
+    //   reject();
+    // });
+    // same as above
+    return Promise.reject();
+  }
+
+  // You have to use quotes when accessing 
+  // nested property in a document. You don't have to
+  // do it with _id, but I use quotes here for consistency
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
+};
 // User
 const User = mongoose.model('User', UserSchema);
 
 module.exports = {User};
+
+
+
 
 // Example of inserting a new user
 // const newUser = new User({
