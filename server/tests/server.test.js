@@ -188,7 +188,7 @@ describe('PATCH /todos/:id', () => {
   });
 });
 
-describe ('GET /users/me', () => {
+describe('GET /users/me', () => {
   it('should return user if authenticated', done => {
     request(app)
       .get('/users/me')
@@ -201,7 +201,7 @@ describe ('GET /users/me', () => {
       .end(done);
   });
 
-  it ('should return 401 if not authenticated', done => {
+  it('should return 401 if not authenticated', done => {
     request(app)
       .get('/users/me')
       .expect(401)
@@ -220,7 +220,7 @@ describe('POST /users', () => {
 
     request(app)
       .post('/users')
-      .send({email, password})
+      .send({ email, password })
       .expect(200)
       .expect((res) => {
         expect(res.headers['x-auth']).toExist();
@@ -232,11 +232,11 @@ describe('POST /users', () => {
           return done(err);
         }
 
-        User.findOne({email}).then((user) => {
+        User.findOne({ email }).then((user) => {
           expect(user).toExist();
           expect(user.password).toNotBe(password);
           done();
-        });
+        }).catch(e => done(e));
       });
   });
 
